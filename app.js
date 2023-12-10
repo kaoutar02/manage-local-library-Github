@@ -5,8 +5,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 
 const indexRouter = require("./routes/index");
-const usersRouter = require("./routes/users");
-const catalogRouter = require("./routes/catalog"); // Import routes for "catalog" area of site
+const catalogRouter = require("./routes/catalog"); // Import routes for "catalog" area of the site
 
 const compression = require("compression");
 const helmet = require("helmet");
@@ -17,7 +16,7 @@ const app = express();
 const RateLimit = require("express-rate-limit");
 const limiter = RateLimit({
   windowMs: 1 * 10 * 1000, // 10 seconds
-  max: 10,
+  max: 100,
 });
 // Apply rate limiter to all requests
 app.use(limiter);
@@ -27,13 +26,18 @@ const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
 
 const dev_db_url =
-  "mongodb+srv://cooluser:coolpassword@cluster0.lz91hw2.mongodb.net/local_library?retryWrites=true&w=majority";
+  "mongodb+srv://kaoutar:k@OUtar1111@cluster0.b6azqsa.mongodb.net/local_library?retryWrites=true&w=majority";
 const mongoDB = process.env.MONGODB_URI || dev_db_url;
 
 main().catch((err) => console.log(err));
 async function main() {
-  await mongoose.connect(mongoDB);
+  await mongoose.connect(mongoDB); // Augmenter le temps limite de connexion à 30 secondes
 }
+
+// Ajoutez la gestion des erreurs de connexion à la base de données
+mongoose.connection.on("error", (err) => {
+  console.error("MongoDB connection error:", err);
+});
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -57,7 +61,6 @@ app.use(compression()); // Compress all routes
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
 app.use("/catalog", catalogRouter); // Add catalog routes to middleware chain.
 
 // catch 404 and forward to error handler
